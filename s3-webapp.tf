@@ -4,8 +4,5 @@ module "s3-webapp" {
   region = var.region
   prefix = var.prefix
   version = "1.0.1"
-    tags = {
-      Environment = "test"
-      Name = "rosezhan"
-  }    
+  
 }
