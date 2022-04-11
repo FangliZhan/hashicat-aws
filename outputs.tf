@@ -6,3 +6,7 @@ output "catapp_url" {
 output "catapp_ip" {
   value = "http://${aws_eip.hashicat.public_ip}"
 }
+
+output "website_endpoint" {
+  value = module.s3-webapp.endpoint
+}
