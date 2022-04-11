@@ -45,6 +45,12 @@ variable "width" {
 }
 
 variable "placeholder" {
-  default     = "placekitten.com"
+  # default     = "placekitten.com"
+  default = "placedog.net" # i am a dog person
   description = "Image-as-a-service URL. Some other fun ones to try are fillmurray.com, placecage.com, placebeard.it, loremflickr.com, baconmockup.com, placeimg.com, placebear.com, placeskull.com, stevensegallery.com, placedog.net"
+}
+
+variable "name" {
+  default = "rose-tfc-demo"
+  description = "default name for the s3-webapp module"
 }
