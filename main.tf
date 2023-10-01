@@ -10,7 +10,7 @@ provider "aws" {
   region  = var.region
 }
 
-resource "aws_vpc" "akeyless-gw" {
+resource "aws_vpc" "hashicat-gw" {
   cidr_block           = var.address_space
   enable_dns_hostnames = true
 
@@ -20,8 +20,8 @@ resource "aws_vpc" "akeyless-gw" {
   }
 }
 
-resource "aws_subnet" "akeyless-gw" {
-  vpc_id     = aws_vpc.akeyless-gw.id
+resource "aws_subnet" "hashicat-gw" {
+  vpc_id     = aws_vpc.hashicat-gw.id
   cidr_block = var.subnet_prefix
 
   tags = {
@@ -29,10 +29,10 @@ resource "aws_subnet" "akeyless-gw" {
   }
 }
 
-resource "aws_security_group" "akeyless-gw" {
+resource "aws_security_group" "hashicat-gw" {
   name = "${var.prefix}-security-group"
 
-  vpc_id = aws_vpc.akeyless-gw.id
+  vpc_id = aws_vpc.hashicat-gw.id
 
   ingress {
     from_port   = 22
@@ -68,26 +68,26 @@ resource "aws_security_group" "akeyless-gw" {
   }
 }
 
-resource "aws_internet_gateway" "akeyless-gw" {
-  vpc_id = aws_vpc.akeyless-gw.id
+resource "aws_internet_gateway" "hashicat-gw" {
+  vpc_id = aws_vpc.hashicat-gw.id
 
   tags = {
     Name = "${var.prefix}-internet-gateway"
   }
 }
 
-resource "aws_route_table" "akeyless-gw" {
-  vpc_id = aws_vpc.akeyless-gw.id
+resource "aws_route_table" "hashicat-gw" {
+  vpc_id = aws_vpc.hashicat-gw.id
 
   route {
     cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.akeyless-gw.id
+    gateway_id = aws_internet_gateway.hashicat-gw.id
   }
 }
 
-resource "aws_route_table_association" "akeyless-gw" {
-  subnet_id      = aws_subnet.akeyless-gw.id
-  route_table_id = aws_route_table.akeyless-gw.id
+resource "aws_route_table_association" "hashicat-gw" {
+  subnet_id      = aws_subnet.hashicat-gw.id
+  route_table_id = aws_route_table.hashicat-gw.id
 }
 
 data "aws_ami" "ubuntu" {
@@ -107,26 +107,26 @@ data "aws_ami" "ubuntu" {
   owners = ["099720109477"] # Canonical
 }
 
-resource "aws_eip" "akeyless-gw" {
-  instance = aws_instance.akeyless-gw.id
+resource "aws_eip" "hashicat-gw" {
+  instance = aws_instance.hashicat-gw.id
   vpc      = true
 }
 
-resource "aws_eip_association" "akeyless-gw" {
-  instance_id   = aws_instance.akeyless-gw.id
-  allocation_id = aws_eip.akeyless-gw.id
+resource "aws_eip_association" "hashicat-gw" {
+  instance_id   = aws_instance.hashicat-gw.id
+  allocation_id = aws_eip.hashicat-gw.id
 }
 
-resource "aws_instance" "akeyless-gw" {
+resource "aws_instance" "hashicat-gw" {
   ami                         = data.aws_ami.ubuntu.id
   instance_type               = var.instance_type
-  key_name                    = aws_key_pair.akeyless-gw.key_name
+  key_name                    = aws_key_pair.hashicat-gw.key_name
   associate_public_ip_address = true
-  subnet_id                   = aws_subnet.akeyless-gw.id
-  vpc_security_group_ids      = [aws_security_group.akeyless-gw.id]
+  subnet_id                   = aws_subnet.hashicat-gw.id
+  vpc_security_group_ids      = [aws_security_group.hashicat-gw.id]
 
   tags = {
-    Name = "${var.prefix}-akeyless-gw-instance"
+    Name = "${var.prefix}-hashicat-gw-instance"
     Department = "bv-demo"
     Billable = "yes"
   }
@@ -145,7 +145,7 @@ resource "aws_instance" "akeyless-gw" {
 # Add execute permissions to our scripts.
 # Run the deploy_app.sh script.
 resource "null_resource" "configure-cat-app" {
-  depends_on = [aws_eip_association.akeyless-gw]
+  depends_on = [aws_eip_association.hashicat-gw]
 
   triggers = {
     build_number = timestamp()
@@ -158,8 +158,8 @@ resource "null_resource" "configure-cat-app" {
     connection {
       type        = "ssh"
       user        = "ubuntu"
-      private_key = tls_private_key.akeyless-gw.private_key_pem
-      host        = aws_eip.akeyless-gw.public_ip
+      private_key = tls_private_key.hashicat-gw.private_key_pem
+      host        = aws_eip.hashicat-gw.public_ip
     }
   }
 
@@ -180,13 +180,13 @@ resource "null_resource" "configure-cat-app" {
     connection {
       type        = "ssh"
       user        = "ubuntu"
-      private_key = tls_private_key.akeyless-gw.private_key_pem
-      host        = aws_eip.akeyless-gw.public_ip
+      private_key = tls_private_key.hashicat-gw.private_key_pem
+      host        = aws_eip.hashicat-gw.public_ip
     }
   }
 }
 
-resource "tls_private_key" "akeyless-gw" {
+resource "tls_private_key" "hashicat-gw" {
   algorithm = "RSA"
 }
 
@@ -194,7 +194,7 @@ locals {
   private_key_filename = "${var.prefix}-ssh-key.pem"
 }
 
-resource "aws_key_pair" "akeyless-gw" {
+resource "aws_key_pair" "hashicat-gw" {
   key_name   = local.private_key_filename
-  public_key = tls_private_key.akeyless-gw.public_key_openssh
+  public_key = tls_private_key.hashicat-gw.public_key_openssh
 }
